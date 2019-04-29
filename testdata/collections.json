@@ -1,0 +1,73 @@
+[
+    {
+        "id": "SampleCollection",
+        "indexingPolicy": {
+            "indexingMode": "consistent",
+            "automatic": true,
+            "includedPaths": [
+                {
+                    "path": "/*",
+                    "indexes": [
+                        {
+                            "kind": "Range",
+                            "dataType": "Number",
+                            "precision": -1
+                        },
+                        {
+                            "kind": "Hash",
+                            "dataType": "String",
+                            "precision": 3
+                        }
+                    ]
+                }
+            ],
+            "excludedPaths": [
+                {
+                    "path": "/foobar"
+                }
+            ]
+        },
+        "_rid": "PaYSAPH7qAo=",
+        "_ts": 1459194239,
+        "_self": "dbs/PaYSAA==/colls/PaYSAPH7qAo=/",
+        "_etag": "\"00001300-0000-0000-0000-56f9897f0000\"",
+        "_docs": "docs/",
+        "_sprocs": "sprocs/",
+        "_triggers": "triggers/",
+        "_udfs": "udfs/",
+        "_conflicts": "conflicts/"
+    },
+    {
+        "id": "SampleCollectionWithCustomIndexPolicy",
+        "indexingPolicy": {
+            "indexingMode": "lazy",
+            "automatic": true,
+            "includedPaths": [
+                {
+                    "path": "/*",
+                    "indexes": [
+                        {
+                            "kind": "Range",
+                            "dataType": "Number",
+                            "precision": -1
+                        },
+                        {
+                            "kind": "Hash",
+                            "dataType": "String",
+                            "precision": 3
+                        }
+                    ]
+                }
+            ]
+        },
+        "_rid": "PaYSAIxUPws=",
+        "_ts": 1459194241,
+        "_self": "dbs/PaYSAA==/colls/PaYSAIxUPws=/",
+        "_etag": "\"00001500-0000-0000-0000-56f989810000\"",
+        "_docs": "docs/",
+        "_sprocs": "sprocs/",
+        "_triggers": "triggers/",
+        "_udfs": "udfs/",
+        "_conflicts": "conflicts/"
+    }
+]

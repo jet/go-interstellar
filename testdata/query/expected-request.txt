@@ -1,0 +1,11 @@
+POST /dbs/db1/colls/col1/docs HTTP/1.1
+Host: localhost:8081
+Authorization: TESTING
+User-Agent: Test/1.0
+X-Ms-Consistency-Level: Eventual
+X-Ms-Continuation: {"token":"+RID:YrMqAKFnpn5IAAAAAAAAAA==#RT:3#TRC:15#FPC:AgEAAAAGAEiAAcAAgg==","range":{"min":"","max":"FF"}}
+X-Ms-Documentdb-Query-Enablecrosspartition: true
+X-Ms-Max-Item-Count: 100
+X-Ms-Session-Token: 0:102
+
+{"query":"SELECT * FROM Families f WHERE f.lastName = @lastName AND f.address.state = @addressState","parameters":[{"name":"@lastName","value":"Wakefield"},{"name":"@addressState","value":"NY"}]}

@@ -1,0 +1,55 @@
+[
+    {
+        "id": "Hu+t",
+        "_rid": "Hu+t",
+        "_ts": 1459264031,
+        "_self": "offers/Hu+t/",
+        "_etag": "\"00009100-0000-0000-0000-56fa9a1f0000\"",
+        "offerVersion": "V2",
+        "offerType": "Invalid",
+        "content": {
+            "offerThroughput": 500
+        },
+        "resource": "dbs/yEcCAA==/colls/yEcCAPX6aAw=/",
+        "offerResourceId": "yEcCAPX6aAw="
+    },
+    {
+        "offerVersion": "V2",
+        "offerType": "Invalid",
+        "content": {
+            "offerThroughput": 400
+        },
+        "resource": "dbs/PaYSAA==/colls/PaYSAPH7qAo=/",
+        "offerResourceId": "PaYSAPH7qAo=",
+        "id": "QH8O",
+        "_rid": "QH8O",
+        "_self": "offers/QH8O/",
+        "_etag": "\"00001400-0000-0000-0000-56f9897f0000\"",
+        "_ts": 1459194239
+    },
+    {
+        "offerType": "S3",
+        "resource": "dbs/hPJRAA==/colls/hPJRAJQcIQg=/",
+        "offerResourceId": "hPJRAJQcIQg=",
+        "id": "Z2sl",
+        "_rid": "Z2sl",
+        "_self": "offers/Z2sl/",
+        "_etag": "\"00000200-0000-0000-0000-56b281730000\"",
+        "_ts": 1454539123
+    },
+    {
+        "resource": "dbs/EYVAAA==/colls/EYVAANlOJcg=/",
+        "offerType": "Invalid",
+        "offerResourceId": "EYVAANlOJcg=",
+        "offerVersion": "V2",
+        "content": {
+            "offerThroughput": 1000,
+            "offerIsRUPerMinuteThroughputEnabled": false
+        },
+        "id": "bYcK",
+        "_rid": "bYcK",
+        "_self": "offers/bYcK/",
+        "_etag": "\"00003804-0000-0200-0000-5cb893520000\"",
+        "_ts": 1555600210
+    }
+]

@@ -1,0 +1,29 @@
+[
+    {
+        "id": "iot2",
+        "_rid": "qicAAA==",
+        "_ts": 1446192371,
+        "_self": "dbs/qicAAA==/",
+        "_etag": "\"00001800-0000-0000-0000-563324f30000\"",
+        "_colls": "colls/",
+        "_users": "users/"
+    },
+    {
+        "id": "TestDB2",
+        "_rid": "KI0YAA==",
+        "_ts": 1446243863,
+        "_self": "dbs/KI0YAA==/",
+        "_etag": "\"00001f00-0000-0000-0000-5633ee170000\"",
+        "_colls": "colls/",
+        "_users": "users/"
+    },
+    {
+        "id": "FoodDB",
+        "_rid": "vdoeAA==",
+        "_ts": 1442511602,
+        "_self": "dbs/vdoeAA==/",
+        "_etag": "\"00000100-0000-0000-0000-55fafaf20000\"",
+        "_colls": "colls/",
+        "_users": "users/"
+    }
+]
