@@ -13,10 +13,14 @@ An `interstellar.Client` can be constructed via `interstellar.NewClient`. This r
 ```go
 // error handling omitted for brevity
 
+// connection string for Azure CosmosDB Storage Emulator using the well-known AccountKey
 cstring   := "AccountEndpoint=https://localhost:8081/;AccountKey=C2y6yDjf5/R+ob0N8A7Cgv30VRDJIWEHLM+4QDU5DE2nQ9nDuVTqobD4b8mGGyPMbIZnqyMsEcaGQy67XIw/Jw=="
 cs, _     := interstellar.ParseConnectionString(cstring)
 client, _ := interstellar.NewClient(cs, nil)
 ```
+
+**Note**: You should not hard-code your connction string in your application;
+use an environment variable or some form of safe secret injection like HashiCorp Vault.
 
 Optionally, NewClient takes a type that implements `interstellar.Requester`.
 You may supply a `http.Client` here, since this satisifed interface. If a `Requester` isn't provided, an HTTP Client will be created for this client automatically. **Note**: `http.DefaultClient` will NOT be used by default.
@@ -28,6 +32,8 @@ This constructor method also adds some retry logic specifically for CosmosDB Ret
 If you want full control over how the client is constructed, you can do this directly by creating an `intersteller.Client` value.
 
 ```go
+
+// well-known AccountKey for Azure CosmosDB Storage Emulator
 key, _ := interstellar.ParseMasterKey("C2y6yDjf5/R+ob0N8A7Cgv30VRDJIWEHLM+4QDU5DE2nQ9nDuVTqobD4b8mGGyPMbIZnqyMsEcaGQy67XIw/Jw==")
 client := &interstellar.Client{
   UserAgent:  interstellar.DefaultUserAgent,
@@ -37,7 +43,7 @@ client := &interstellar.Client{
 }
 ```
 
-Note: In this case, the retry/backoff logic will not be applied.
+**Note**: In this case, the retry/backoff logic will not be applied.
 
 ### Examples
 
@@ -90,6 +96,8 @@ client.WithDatabase("db1").WithCollection("col1").QueryDocumentsRaw(context.Back
   return true, nil
 })
 ```
+
+**Note**: It is best practice to use parameterized queries like above, especially if your parameter may be from an untrusted/user-suplied source. However, this library *cannot* detect injection, and *cannot* stop you from using string concatenation to construct your query.
 
 ## Running Integration Tests
 
