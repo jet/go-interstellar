@@ -16,6 +16,9 @@ See the License for the specific language governing permissions and
 limitations under the License."
 #>
 
+$ErrorActionPreference = 'Stop'
+$ProgressPreference = 'SilentlyContinue'
+
 # Set CosmosDB Data + Sources Directories
 if (-not (Test-Path env:COSMOSDB_DATA_PATH)) { $env:COSMOSDB_DATA_PATH="${env:LOCALAPPDATA}\CosmosDBEmulator\bind-mount" }
 if (-not (Test-Path env:SOURCES)) { $env:SOURCES=[System.IO.Path]::GetFullPath( (Join-Path "$PSScriptRoot" "..\") ) }
@@ -24,21 +27,47 @@ if (-not (Test-Path env:SOURCES)) { $env:SOURCES=[System.IO.Path]::GetFullPath( 
 Remove-Item -Path "$env:COSMOSDB_DATA_PATH" -Recurse -ErrorAction Ignore | Out-Null
 New-Item -ItemType directory -Path "$env:COSMOSDB_DATA_PATH" -ErrorAction Stop | Out-Null
 
+# Install-Go
+if(-not (Test-Path -Path "env:GOROOT")) {
+    Write-Host "=== Installing GO ==="
+    $downloadUrl = "https://dl.google.com/go/go1.12.5.windows-amd64.zip"
+    $sha256hash  = "ccb694279aab39fe0e70629261f13b0307ee40d2d5e1138ed94738023ab04baa"
+
+    Write-Host "Downloading Go"
+    Invoke-WebRequest -Uri $downloadURL -OutFile go.zip
+
+    If((Get-FileHash go.zip -Algorithm sha256).Hash -ne $sha256hash) {
+        Write-Host "Failed to validate go.zip"
+        exit 1
+    }
+    
+    $env:GOROOT = "$env:BUILD_BINARIESDIRECTORY\go"
+    $env:PATH = "${env:PATH};${env:GOROOT}\bin"
+    
+    Write-Host "Expanding go.zip..."
+    Expand-Archive go.zip -DestinationPath $env:BUILD_BINARIESDIRECTORY
+    
+    Write-Host "Validating Go Version"
+    go version
+
+    Remove-Item go.zip
+    Write-Host "Compelete"
+}
+
+
 Write-Host "=== Initialized ==="
 Write-Host " - Cosmos DB Data : '$env:COSMOSDB_DATA_PATH'"
 Write-Host " - Sources        : '$env:SOURCES'"
 
-Write-Host "=== Starting Testing Containers ==="
-& docker-compose --compatibility build 2>&1
-& docker-compose --compatibility `
-    up `
-    --exit-code-from tester `
-    --always-recreate-deps `
-    --abort-on-container-exit 2>&1
+Write-Host "=== Starting CosmosDB ==="
+& docker-compose --compatibility up --detach
+
+Write-Host "=== Running Test ==="
+& powershell.exe ./test.ps1
 $result = $LASTEXITCODE
 
-Write-Host "Cleaning Up"
-& docker-compose --compatibility rm -s -f  2>&1
+Write-Host "=== Cleaning Up ==="
+& docker-compose --compatibility down
 
-Write-Host "Exiting with $result"
+Write-Host "### Exiting with: $result"
 exit $result
