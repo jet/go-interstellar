@@ -1,0 +1,19 @@
+trigger:
+- master
+
+pr:
+- master
+
+pool:
+  vmImage: 'win1803'
+
+steps:
+- task: PowerShell@2
+  displayName: 'Run Integration Tests'
+  inputs:
+    targetType: filePath
+    filePath: ./cicd/run.ps1
+    workingDirectory: cicd
+  env:
+    COSMOSDB_DATA_PATH: $(Build.BinariesDirectory)\CosmosDBEmulator\bind-mount\
+    SOURCES: $(Build.SourcesDirectory)
