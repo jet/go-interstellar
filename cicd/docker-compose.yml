@@ -25,22 +25,42 @@ services:
             limits:
               memory: '4G'
         tty: true
+        expose:
+        - "8081"
+        - "8900"
+        - "8901"
+        - "8902"
+        - "10250"
+        - "10251"
+        - "10252"
+        - "10253"
+        - "10254"
+        - "10255"
+        - "10256"
+        - "10350"
         logging:
           driver: none
-        ports:
-        - "8081:8081"
-        - "8900:8900"
-        - "8901:8901"
-        - "8902:8902"
-        - "10250:10250"
-        - "10251:10251"
-        - "10252:10252"
-        - "10253:10253"
-        - "10254:10254"
-        - "10255:10255"
-        - "10256:10256"
-        - "10350:10350"
+        networks:
+        - net
         volumes:
         - type: bind
           source: '${COSMOSDB_DATA_PATH}'
           target: 'C:\CosmosDB.Emulator\bind-mount'
+    tester:
+        isolation: hyperv
+        depends_on:
+        - cosmosdb
+        build: .
+        working_dir: 'C:\source'
+        networks:
+        - net
+        volumes:
+        - type: bind
+          source: '${SOURCES}'
+          target: 'C:\source'
+        - type: bind
+          source: '${COSMOSDB_DATA_PATH}'
+          target: 'C:\CosmosDB.Emulator\bind-mount'
+
+networks:
+    net:
