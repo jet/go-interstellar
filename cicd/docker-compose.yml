@@ -47,7 +47,6 @@ services:
           source: '${COSMOSDB_DATA_PATH}'
           target: 'C:\CosmosDB.Emulator\bind-mount'
     tester:
-        isolation: hyperv
         depends_on:
         - cosmosdb
         build: .
