@@ -17,6 +17,7 @@
 package interstellar_test
 
 import (
+	"bytes"
 	"context"
 	"encoding/json"
 	"io/ioutil"
@@ -335,6 +336,80 @@ func TestIntegrationQueryDocuments(t *testing.T) {
 	}
 	if balance != 2547 {
 		t.Errorf("expected events account balance=2547, got %d", balance)
+		return
+	}
+}
+
+func TestIntegrationStoredProcedure(t *testing.T) {
+	integration.Mark(t)
+	client := testutil.CreateTestClient(t)
+	ctx := context.Background()
+	defer integration.LoadDatabase(t, client, "./testdata/databases/db1")()
+
+	sprocID := "sproc_hello_world"
+	coll := client.WithDatabase("db1").WithCollection("col1")
+
+	sproc, _, err := coll.CreateStoredProcedure(ctx, interstellar.CreateStoredProcedureRequest{
+		ID: sprocID,
+		Body: `function (name) {
+			var context = getContext();
+			var response = context.getResponse();
+			response.setBody("Hello, " + name); 
+		}`,
+	})
+	if err != nil {
+		t.Errorf("create sproc failed: %v", err)
+		return
+	}
+
+	if err = coll.ListStoredProcedures(ctx, nil, func(resList []interstellar.StoredProcedureResource, meta interstellar.ResponseMetadata) (bool, error) {
+		if len(resList) != 1 {
+			t.Errorf("expected 1 stored procedure, got %d", len(resList))
+		}
+		if resList[0].ID != sprocID {
+			t.Errorf("expected stored procedure[0].ID = '%s', got %s", sprocID, resList[0].ID)
+		}
+		return false, nil
+	}); err != nil {
+		t.Errorf("list sproc failed: %v", err)
+		return
+	}
+
+	spc := coll.WithStoredProcedure(sproc.ID)
+	body, _, err := spc.Execute(ctx, nil, "World")
+	if err != nil {
+		t.Errorf("execute sproc failed: %v", err)
+		return
+	}
+	expected := []byte(`"Hello, World"`)
+	if !bytes.Equal(body, expected) {
+		t.Errorf("execute sproc: expected '%s' got '%s'", string(expected), body)
+		return
+	}
+	sproc, _, err = spc.Replace(ctx, `function (name) {
+		var context = getContext();
+		var response = context.getResponse();
+		response.setBody("Goodbye, " + name); 
+	}`, &interstellar.CommonRequestOptions{
+		IfMatch: sproc.ETag,
+	})
+	if err != nil {
+		t.Errorf("replace sproc failed: %v", err)
+		return
+	}
+	fn := spc.Func(nil)
+	body, _, err = fn(ctx, "World")
+	if err != nil {
+		t.Errorf("execute sproc failed: %v", err)
+		return
+	}
+	expected = []byte(`"Goodbye, World"`)
+	if !bytes.Equal(body, expected) {
+		t.Errorf("execute sproc: expected '%s' got '%s'", string(expected), body)
+		return
+	}
+	if _, _, err := spc.Delete(ctx, nil); err != nil {
+		t.Errorf("delete sproc failed: %v", err)
 		return
 	}
 }
