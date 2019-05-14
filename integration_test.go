@@ -413,3 +413,70 @@ func TestIntegrationStoredProcedure(t *testing.T) {
 		return
 	}
 }
+
+func TestIntegrationUserDefinedFunctions(t *testing.T) {
+	integration.Mark(t)
+	client := testutil.CreateTestClient(t)
+	ctx := context.Background()
+	defer integration.LoadDatabase(t, client, "./testdata/databases/db1")()
+
+	udfID := "Greet"
+	coll := client.WithDatabase("db1").WithCollection("col1")
+
+	udf, _, err := coll.CreateUserDefinedFunction(ctx, interstellar.CreateUserDefinedFunctionRequest{
+		ID:   udfID,
+		Body: `function greet(name) { return "Hello, " + name; }`,
+	})
+	if err != nil {
+		t.Errorf("create udf failed: %v", err)
+		return
+	}
+	if err = coll.ListUserDefinedFunctions(ctx, nil, func(resList []interstellar.UserDefinedFunctionResource, meta interstellar.ResponseMetadata) (bool, error) {
+		if len(resList) != 1 {
+			t.Errorf("expected 1 user defined function, got %d", len(resList))
+		}
+		if resList[0].ID != udfID {
+			t.Errorf("expected user defined function[0].ID = '%s', got %s", udfID, resList[0].ID)
+		}
+		return false, nil
+	}); err != nil {
+		t.Errorf("list udf failed: %v", err)
+		return
+	}
+	coll.QueryDocumentsRaw(ctx, &interstellar.Query{Query: `SELECT VALUE udf.Greet("Murphy")`}, func(resList []json.RawMessage, meta interstellar.ResponseMetadata) (bool, error) {
+		if len(resList) != 1 {
+			t.Errorf("expected 1 result, got %d", len(resList))
+		}
+		var greeting string
+		expected := "Hello, Murphy"
+		json.Unmarshal(resList[0], &greeting)
+		if greeting != expected {
+			t.Errorf("expected '%s' but got '%s'", expected, greeting)
+		}
+		return false, nil
+	})
+	udfc := coll.WithUDF(udf.ID)
+	udf, _, err = udfc.Replace(ctx, `function greet(name) { return "Hey, " + name; }`, &interstellar.CommonRequestOptions{
+		IfMatch: udf.ETag,
+	})
+	if err != nil {
+		t.Errorf("replace udf failed: %v", err)
+		return
+	}
+	coll.QueryDocumentsRaw(ctx, &interstellar.Query{Query: `SELECT VALUE udf.Greet("Murphy")`}, func(resList []json.RawMessage, meta interstellar.ResponseMetadata) (bool, error) {
+		if len(resList) != 1 {
+			t.Errorf("expected 1 result, got %d", len(resList))
+		}
+		var greeting string
+		expected := "Hey, Murphy"
+		json.Unmarshal(resList[0], &greeting)
+		if greeting != expected {
+			t.Errorf("expected '%s' but got '%s'", expected, greeting)
+		}
+		return false, nil
+	})
+	if _, _, err := udfc.Delete(ctx, nil); err != nil {
+		t.Errorf("delete udf failed: %v", err)
+		return
+	}
+}
