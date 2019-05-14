@@ -19,6 +19,9 @@ limitations under the License."
 $ErrorActionPreference = 'Stop'
 $ProgressPreference = 'SilentlyContinue'
 
+# Ensure piped output does not use UTF16LE and instead uses UTF-8 WITHOUT the pseudo-BOM
+$OutputEncoding = (New-Object System.Text.UTF8Encoding $False) 
+
 $sleeptime = 5
 
 Function Import-CosmosDBCert {
@@ -80,8 +83,19 @@ Write-Host "Running Integration Tests"
 $env:DEBUG_LOGGING="Y"
 $env:RUN_INTEGRATION_TESTS="Y"
 $env:AZURE_COSMOS_DB_CONNECTION_STRING="AccountEndpoint=https://localhost:8081/;AccountKey=C2y6yDjf5/R+ob0N8A7Cgv30VRDJIWEHLM+4QDU5DE2nQ9nDuVTqobD4b8mGGyPMbIZnqyMsEcaGQy67XIw/Jw=="
+
+$testDir="$env:BUILD_BINARIESDIRECTORY\test"
+$coverageDir="$testDir\coverage"
+New-Item -ItemType directory -Path "$testDir" -ErrorAction Stop | Out-Null
+New-Item -ItemType directory -Path "$coverageDir" -ErrorAction Stop | Out-Null
+
 Set-Location -Path "$env:BUILD_SOURCESDIRECTORY"
-& go test -v -cover .
+go test -v -coverprofile="$testDir\coverprofile.txt" -covermode count . 2>&1 | go-junit-report > "$testDir\report.xml"
+
+gocov convert "$testDir\coverprofile.txt" > "$testDir\coverprofile.json"
+Get-Content -Encoding UTF8 "$testDir\coverprofile.json" | gocov-xml > "$testDir\coverage.xml"
+Get-Content -Encoding UTF8 "$testDir\coverprofile.json" | gocov-html > "$coverageDir\index.html"
+
 $result = $LASTEXITCODE
 Write-Host "Exiting with $result"
 exit $result

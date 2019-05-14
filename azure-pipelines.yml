@@ -17,3 +17,12 @@ steps:
   env:
     COSMOSDB_DATA_PATH: $(Build.BinariesDirectory)\CosmosDBEmulator\bind-mount\
     SOURCES: $(Build.SourcesDirectory)
+- task: PublishTestResults@2
+  inputs:
+    testRunner: JUnit
+    testResultsFiles: $(Build.BinariesDirectory)/**/report.xml
+- task: PublishCodeCoverageResults@1
+  inputs:
+    codeCoverageTool: Cobertura
+    summaryFileLocation: $(Build.BinariesDirectory)/**/coverage.xml
+    reportDirectory: $(Build.BinariesDirectory)/**/coverage

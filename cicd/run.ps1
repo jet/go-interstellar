@@ -50,6 +50,12 @@ if(-not (Test-Path -Path "env:GOROOT")) {
     Write-Host "Validating Go Version"
     go version
 
+    Write-Host "Install Test Utilities"
+    go get 'github.com/jstemmer/go-junit-report'
+    go get 'github.com/axw/gocov/gocov'
+    go get 'github.com/AlekSi/gocov-xml'
+    go get -u 'gopkg.in/matm/v1/gocov-html'
+
     Remove-Item go.zip
     Write-Host "Compelete"
 }
