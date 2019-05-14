@@ -57,8 +57,20 @@ func (r CreateUserDefinedFunctionRequest) ApplyOptions(req *http.Request) {
 	}
 }
 
-// CreateUserDefinedFunctionRaw creates a UDF
-func (c *CollectionClient) CreateUserDefinedFunctionRaw(ctx context.Context, req CreateUserDefinedFunctionRequest) ([]byte, *ResponseMetadata, error) {
+// CreateUserDefinedFunction creates a UDF
+func (c *CollectionClient) CreateUserDefinedFunction(ctx context.Context, req CreateUserDefinedFunctionRequest) (*UserDefinedFunctionResource, *ResponseMetadata, error) {
+	body, meta, err := c.createUserDefinedFunctionRaw(ctx, req)
+	if err != nil {
+		return nil, meta, err
+	}
+	var udf UserDefinedFunctionResource
+	if err = json.Unmarshal(body, &udf); err != nil {
+		return nil, meta, err
+	}
+	return &udf, meta, nil
+}
+
+func (c *CollectionClient) createUserDefinedFunctionRaw(ctx context.Context, req CreateUserDefinedFunctionRequest) ([]byte, *ResponseMetadata, error) {
 	rl := fmt.Sprintf("dbs/%s/colls/%s", url.PathEscape(c.DatabaseID), url.PathEscape(c.CollectionID))
 	body, err := json.Marshal(&req)
 	if err != nil {
@@ -73,36 +85,12 @@ func (c *CollectionClient) CreateUserDefinedFunctionRaw(ctx context.Context, req
 	})
 }
 
-// CreateUserDefinedFunction creates a UDF
-func (c *CollectionClient) CreateUserDefinedFunction(ctx context.Context, req CreateUserDefinedFunctionRequest) (*UserDefinedFunctionResource, *ResponseMetadata, error) {
-	body, meta, err := c.CreateUserDefinedFunctionRaw(ctx, req)
-	if err != nil {
-		return nil, meta, err
-	}
-	var udf UserDefinedFunctionResource
-	if err = json.Unmarshal(body, &udf); err != nil {
-		return nil, meta, err
-	}
-	return &udf, meta, nil
-}
-
-// ListUserDefinedFunctionsRaw lists all user-defined functions
-func (c *CollectionClient) ListUserDefinedFunctionsRaw(ctx context.Context, opts RequestOptions, fn PaginateRawResources) error {
-	rl := c.ResourceLink()
-	return c.Client.ListResources(ctx, "UserDefinedFunctions", ClientRequest{
-		Path:         fmt.Sprintf("/%s/udfs", rl),
-		ResourceLink: rl,
-		ResourceType: ResourceUserDefinedFunctions,
-		Options:      opts,
-	}, fn)
-}
-
 // PaginateUDFResource pagination function for a list of UserDefiendFunctions
 type PaginateUDFResource func(resList []UserDefinedFunctionResource, meta ResponseMetadata) (bool, error)
 
 // ListUserDefinedFunctions lists each User-defined Function in the collection
 func (c *CollectionClient) ListUserDefinedFunctions(ctx context.Context, opts RequestOptions, fn PaginateUDFResource) error {
-	return c.ListUserDefinedFunctionsRaw(ctx, opts, func(resList []json.RawMessage, meta ResponseMetadata) (bool, error) {
+	return c.listUserDefinedFunctionsRaw(ctx, opts, func(resList []json.RawMessage, meta ResponseMetadata) (bool, error) {
 		udfs := make([]UserDefinedFunctionResource, len(resList))
 		for i, res := range resList {
 			var udf UserDefinedFunctionResource
@@ -113,6 +101,16 @@ func (c *CollectionClient) ListUserDefinedFunctions(ctx context.Context, opts Re
 		}
 		return fn(udfs, meta)
 	})
+}
+
+func (c *CollectionClient) listUserDefinedFunctionsRaw(ctx context.Context, opts RequestOptions, fn PaginateRawResources) error {
+	rl := c.ResourceLink()
+	return c.Client.ListResources(ctx, "UserDefinedFunctions", ClientRequest{
+		Path:         fmt.Sprintf("/%s/udfs", rl),
+		ResourceLink: rl,
+		ResourceType: ResourceUserDefinedFunctions,
+		Options:      opts,
+	}, fn)
 }
 
 // UDFClient is a client scoped to a single user-defined function
@@ -139,8 +137,20 @@ func (c *UDFClient) ResourceLink() string {
 	return fmt.Sprintf("dbs/%s/colls/%s/udfs/%s", url.PathEscape(c.DatabaseID), url.PathEscape(c.CollectionID), url.PathEscape(c.UDFID))
 }
 
-// ReplaceRaw replaces a UDF Body with the new one
-func (c *UDFClient) ReplaceRaw(ctx context.Context, body string, opts RequestOptions) ([]byte, *ResponseMetadata, error) {
+// Replace replaces a UDF Body with the new one
+func (c *UDFClient) Replace(ctx context.Context, body string, opts RequestOptions) (*UserDefinedFunctionResource, *ResponseMetadata, error) {
+	bs, meta, err := c.replaceRaw(ctx, body, opts)
+	if err != nil {
+		return nil, meta, err
+	}
+	var udf UserDefinedFunctionResource
+	if err = json.Unmarshal(bs, &udf); err != nil {
+		return nil, meta, err
+	}
+	return &udf, meta, nil
+}
+
+func (c *UDFClient) replaceRaw(ctx context.Context, body string, opts RequestOptions) ([]byte, *ResponseMetadata, error) {
 	rl := c.ResourceLink()
 	udf := UserDefinedFunctionResource{
 		ID:   c.UDFID,
@@ -158,19 +168,6 @@ func (c *UDFClient) ReplaceRaw(ctx context.Context, body string, opts RequestOpt
 		Options:      opts,
 		Body:         bytes.NewBuffer(bs),
 	})
-}
-
-// Replace replaces a UDF Body with the new one
-func (c *UDFClient) Replace(ctx context.Context, body string, opts RequestOptions) (*UserDefinedFunctionResource, *ResponseMetadata, error) {
-	bs, meta, err := c.ReplaceRaw(ctx, body, opts)
-	if err != nil {
-		return nil, meta, err
-	}
-	var udf UserDefinedFunctionResource
-	if err = json.Unmarshal(bs, &udf); err != nil {
-		return nil, meta, err
-	}
-	return &udf, meta, nil
 }
 
 // Delete deletes the user-defined function
