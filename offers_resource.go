@@ -89,7 +89,7 @@ type OfferContent struct {
 // ErrOfferInvalidVersion is returned when an invalid offer version is read
 const ErrOfferInvalidVersion = Error("insterstellar: invalid offer version")
 
-// UnmarshalJSON implementes json.Unmarshaler for OfferResource
+// UnmarshalJSON implements json.Unmarshaler for OfferResource
 func (oc *OfferResource) UnmarshalJSON(data []byte) error {
 	var offerjs offerJSON
 	if err := json.Unmarshal(data, &offerjs); err != nil {
@@ -114,7 +114,7 @@ func (oc *OfferResource) UnmarshalJSON(data []byte) error {
 	return nil
 }
 
-// MarshalJSON implementes json.Marshaler for OfferResource
+// MarshalJSON implements json.Marshaler for OfferResource
 func (oc *OfferResource) MarshalJSON() ([]byte, error) {
 	var offerjs offerJSON
 	offerjs.ID = oc.ID
