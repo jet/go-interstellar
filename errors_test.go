@@ -16,7 +16,10 @@
 
 package interstellar
 
-import "testing"
+import (
+	"net/http"
+	"testing"
+)
 
 func TestErrorString(t *testing.T) {
 	err := Error("test error")
@@ -24,6 +27,18 @@ func TestErrorString(t *testing.T) {
 		t.Fatalf("constant equality check failed")
 	}
 	if err != Error("test error") {
+		t.Fatalf("constant equality check failed")
+	}
+}
+
+func TestErrorStatus(t *testing.T) {
+	var err error = ErrResourceNotModified
+	type hasStatus interface{ Status() int }
+	if hs, ok := err.(hasStatus); !ok || hs.Status() != http.StatusNotModified {
+		t.Fatalf("constant equality check failed")
+	}
+	err = ErrResourceNotFound
+	if hs, ok := err.(hasStatus); !ok || hs.Status() != http.StatusNotFound {
 		t.Fatalf("constant equality check failed")
 	}
 }

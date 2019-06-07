@@ -34,6 +34,9 @@ const (
 
 	// ErrResourceNotFound is returned when a resource is not found
 	ErrResourceNotFound = Error("interstellar: resource not found")
+
+	// ErrResourceNotModified is returned from an http status code 304
+	ErrResourceNotModified = Error("interstellar: resource not modified")
 )
 
 // PaginateRawResources is run by the List* operations with each page of results from the API.
@@ -163,6 +166,9 @@ func (c *Client) ListResources(ctx context.Context, key string, request ClientRe
 			return err
 		}
 		if resp.StatusCode != http.StatusOK {
+			if resp.StatusCode == http.StatusNotModified {
+				return ErrResourceNotModified
+			}
 			return rest.NewErrorHTTPResponse(resp)
 		}
 		meta := GetResponseMetadata(resp)

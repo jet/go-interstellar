@@ -16,6 +16,8 @@
 
 package interstellar
 
+import "net/http"
+
 // Error is an interstellar generated error
 // This type is an alias for 'string' and is used to ensure the interstellar sential errors can be made constant
 type Error string
@@ -23,4 +25,16 @@ type Error string
 // Error implements the error interface for the Error type
 func (e Error) Error() string {
 	return string(e)
+}
+
+// StatusCode relay the status code
+func (e Error) Status() int {
+	switch e {
+	case ErrResourceNotModified:
+		return http.StatusNotModified
+	case ErrResourceNotFound:
+		return http.StatusNotFound
+	default:
+		return 0
+	}
 }
