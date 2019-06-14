@@ -42,7 +42,13 @@ if(-not (Test-Path -Path "env:GOROOT")) {
     }
     
     $env:GOROOT = "$env:BUILD_BINARIESDIRECTORY\go"
-    $env:PATH = "${env:PATH};${env:GOROOT}\bin"
+    $env:GOPATH = "$env:BUILD_BINARIESDIRECTORY\gopath"
+
+    # Ensure GOPATH is clean
+    Remove-Item -Path "$env:GOPATH" -Recurse -ErrorAction Ignore | Out-Null
+    New-Item -ItemType directory -Path "$env:GOPATH" -ErrorAction Stop | Out-Null
+
+    $env:PATH = "${env:PATH};${GOPATH}\bin;${env:GOROOT}\bin"
     
     Write-Host "Expanding go.zip..."
     Expand-Archive go.zip -DestinationPath $env:BUILD_BINARIESDIRECTORY
