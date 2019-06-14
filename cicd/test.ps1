@@ -90,11 +90,11 @@ New-Item -ItemType directory -Path "$testDir" -ErrorAction Stop | Out-Null
 New-Item -ItemType directory -Path "$coverageDir" -ErrorAction Stop | Out-Null
 
 Set-Location -Path "$env:BUILD_SOURCESDIRECTORY"
-go test -v -coverprofile="$testDir\coverprofile.txt" -covermode count . 2>&1 | go-junit-report > "$testDir\report.xml"
+go test -v -coverprofile="$testDir\coverprofile.txt" -covermode count . 2>&1 | &"${env:GOBIN}\go-junit-report" > "$testDir\report.xml"
 
 gocov convert "$testDir\coverprofile.txt" > "$testDir\coverprofile.json"
-Get-Content -Encoding UTF8 "$testDir\coverprofile.json" | gocov-xml > "$testDir\coverage.xml"
-Get-Content -Encoding UTF8 "$testDir\coverprofile.json" | gocov-html > "$coverageDir\index.html"
+Get-Content -Encoding UTF8 "$testDir\coverprofile.json" |  &"${env:GOBIN}\gocov-xml" > "$testDir\coverage.xml"
+Get-Content -Encoding UTF8 "$testDir\coverprofile.json" |  &"${env:GOBIN}\gocov-html" > "$coverageDir\index.html"
 
 $result = $LASTEXITCODE
 Write-Host "Exiting with $result"
