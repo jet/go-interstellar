@@ -42,13 +42,26 @@ if(-not (Test-Path -Path "env:GOROOT")) {
     }
     
     $env:GOROOT = "$env:BUILD_BINARIESDIRECTORY\go"
-    $env:PATH = "${env:PATH};${env:GOROOT}\bin"
+    $env:GOPATH = "$env:BUILD_BINARIESDIRECTORY\gopath"
+    $env:GOBIN  = "${env:GOPATH}\bin"
+
+    # Ensure GOPATH is clean
+    Remove-Item -Path "$env:GOPATH" -Recurse -ErrorAction Ignore | Out-Null
+    New-Item -ItemType directory -Path "$env:GOPATH" -ErrorAction Stop | Out-Null
+
+    $env:PATH = "${env:PATH};${GOBIN};${env:GOROOT}\bin"
     
     Write-Host "Expanding go.zip..."
     Expand-Archive go.zip -DestinationPath $env:BUILD_BINARIESDIRECTORY
     
     Write-Host "Validating Go Version"
     go version
+
+    Write-Host "Install Test Utilities"
+    go install 'github.com/jstemmer/go-junit-report'
+    go install 'github.com/axw/gocov/gocov'
+    go install 'github.com/AlekSi/gocov-xml'
+    go install 'gopkg.in/matm/v1/gocov-html'
 
     Remove-Item go.zip
     Write-Host "Compelete"
